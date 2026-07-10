@@ -20,7 +20,7 @@ public class JikanService {
         this.jikanWebClient = jikanWebClient;
     }
 
-    @Cacheable(value = "jikanSeason", unless = "#result == null")
+    @Cacheable(value = "jikanSeason", unless = "#result == null || #result.get('error') != null")
     public Mono<Map> getSeasonNow() {
         return jikanWebClient.get()
                 .uri("/seasons/now")
@@ -29,7 +29,7 @@ public class JikanService {
                 .onErrorResume(this::handleError);
     }
 
-    @Cacheable(value = "jikanTop", unless = "#result == null")
+    @Cacheable(value = "jikanTop", unless = "#result == null || #result.get('error') != null")
     public Mono<Map> getTopAnime() {
         return jikanWebClient.get()
                 .uri("/top/anime")
@@ -38,7 +38,7 @@ public class JikanService {
                 .onErrorResume(this::handleError);
     }
 
-    @Cacheable(value = "jikanSearch", unless = "#result == null")
+    @Cacheable(value = "jikanSearch", unless = "#result == null || #result.get('error') != null")
     public Mono<Map> searchAnime(String q, String genre, String year, String orderBy, int page) {
         return jikanWebClient.get()
                 .uri(uriBuilder -> {
@@ -59,7 +59,7 @@ public class JikanService {
                 .onErrorResume(this::handleError);
     }
 
-    @Cacheable(value = "jikanAnimes", key = "#id", unless = "#result == null")
+    @Cacheable(value = "jikanAnimes", key = "#id", unless = "#result == null || #result.get('error') != null")
     public Mono<Map> getAnimeById(int id) {
         return jikanWebClient.get()
                 .uri("/anime/{id}/full", id)
@@ -68,8 +68,20 @@ public class JikanService {
                 .onErrorResume(this::handleError);
     }
 
+    @SuppressWarnings("unchecked")
     private Mono<Map> handleError(Throwable error) {
-        // Return empty to avoid caching error responses
-        return Mono.empty();
+        String message;
+        if (error instanceof WebClientResponseException e) {
+            message = "Jikan API retornou erro " + e.getStatusCode();
+        } else if (error instanceof WebClientRequestException) {
+            message = "Jikan API está indisponível no momento. Tente novamente.";
+        } else {
+            message = "Erro ao acessar Jikan API: " + error.getMessage();
+        }
+        return Mono.just(Map.of(
+                "data", List.of(),
+                "error", true,
+                "message", message
+        ));
     }
 }

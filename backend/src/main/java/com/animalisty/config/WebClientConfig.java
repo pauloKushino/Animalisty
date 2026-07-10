@@ -18,7 +18,7 @@ public class WebClientConfig {
     @Bean
     public WebClient jikanWebClient() {
         HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofSeconds(15));
+                .responseTimeout(Duration.ofSeconds(30));
 
         return WebClient.builder()
                 .baseUrl(jikanBaseUrl)
