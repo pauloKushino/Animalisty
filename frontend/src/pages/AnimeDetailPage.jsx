@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { animeService } from '../services/animeService'
 import Spinner from '../components/Spinner'
 
@@ -8,6 +9,7 @@ export default function AnimeDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
+  const { addToast } = useToast()
   const [anime, setAnime] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -94,8 +96,9 @@ export default function AnimeDetailPage() {
       // Refetch average
       const res = await animeService.getRating(id)
       setAvgScore(res.data.average)
+      addToast(`Nota ${score}/10 registrada!`, 'success')
     } catch {
-      // Handle error silently
+      addToast('Erro ao registrar nota', 'error')
     } finally {
       setRatingLoading(false)
     }
@@ -110,8 +113,9 @@ export default function AnimeDetailPage() {
     try {
       await animeService.toggleFavorite(id)
       setIsFavorite(!isFavorite)
+      addToast(isFavorite ? 'Removido dos favoritos' : 'Adicionado aos favoritos!', 'success')
     } catch {
-      // Handle error silently
+      addToast('Erro ao favoritar', 'error')
     }
   }
 
@@ -123,8 +127,9 @@ export default function AnimeDetailPage() {
       const res = await animeService.createComment(id, newComment)
       setComments((prev) => [...prev, res.data])
       setNewComment('')
+      addToast('Comentário adicionado!', 'success')
     } catch {
-      // Handle error silently
+      addToast('Erro ao adicionar comentário', 'error')
     }
   }
 
@@ -137,8 +142,9 @@ export default function AnimeDetailPage() {
       )
       setEditingComment(null)
       setEditContent('')
+      addToast('Comentário atualizado!', 'success')
     } catch {
-      // Handle error silently
+      addToast('Erro ao atualizar comentário', 'error')
     }
   }
 
@@ -146,8 +152,9 @@ export default function AnimeDetailPage() {
     try {
       await animeService.deleteComment(commentId)
       setComments((prev) => prev.filter((c) => c.id !== commentId))
+      addToast('Comentário excluído!', 'success')
     } catch {
-      // Handle error silently
+      addToast('Erro ao excluir comentário', 'error')
     }
   }
 
@@ -164,9 +171,10 @@ export default function AnimeDetailPage() {
       } else {
         await animeService.updateListStatus(id, status)
         setListStatus(status)
+        addToast('Status atualizado na sua lista!', 'success')
       }
     } catch {
-      // Handle error silently
+      addToast('Erro ao atualizar lista', 'error')
     }
   }
 

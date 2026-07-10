@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { animeService } from '../services/animeService'
 import AnimeCard from '../components/AnimeCard'
-import Spinner from '../components/Spinner'
+import SkeletonCard from '../components/SkeletonCard'
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuth()
   const [seasonAnime, setSeasonAnime] = useState([])
   const [topAnime, setTopAnime] = useState([])
   const [loading, setLoading] = useState(true)
@@ -33,8 +35,34 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        {/* Hero skeleton */}
+        <section className="text-center py-12 md:py-20">
+          <div className="h-12 skeleton w-3/4 mx-auto mb-4" />
+          <div className="h-6 skeleton w-1/2 mx-auto mb-8" />
+          <div className="flex justify-center gap-4">
+            <div className="h-12 w-40 skeleton rounded-xl" />
+            <div className="h-12 w-40 skeleton rounded-xl" />
+          </div>
+        </section>
+        {/* Season skeleton */}
+        <section>
+          <div className="h-8 skeleton w-64 mb-6" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </section>
+        {/* Top skeleton */}
+        <section>
+          <div className="h-8 skeleton w-64 mb-6" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </section>
       </div>
     )
   }
@@ -74,12 +102,14 @@ export default function HomePage() {
           >
             Explorar Catálogo
           </Link>
-          <Link
-            to="/register"
-            className="px-6 py-3 border border-border hover:border-accent text-text-primary font-semibold rounded-xl transition-all"
-          >
-            Criar Conta
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              to="/register"
+              className="px-6 py-3 border border-border hover:border-accent text-text-primary font-semibold rounded-xl transition-all"
+            >
+              Criar Conta
+            </Link>
+          )}
         </div>
       </section>
 

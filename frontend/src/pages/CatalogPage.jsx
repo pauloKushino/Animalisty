@@ -55,8 +55,14 @@ export default function CatalogPage() {
   const fetchAnimes = useCallback(async () => {
     setLoading(true)
     setError(null)
-    try {          const res = await animeService.searchAnime({ q: query, genre, year, orderBy, page })
-          setAnimeList(res.data.data || [])
+    try {
+      const res = await animeService.searchAnime({ q: query, genre, year, orderBy, page })
+      if (res.data?.error) {
+        setError(res.data.message || 'API de busca temporariamente indisponível.')
+        setAnimeList([])
+      } else {
+        setAnimeList(res.data?.data || [])
+      }
     } catch (err) {
       setError('Erro ao carregar catálogo. Tente novamente.')
     } finally {
